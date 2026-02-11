@@ -19,6 +19,7 @@ graph TD
     C -->|Aura-Asteria| H[Deepgram TTS]
     H -->|Base64 Audio| B
     B -->|Audio Playback + UI Glow| I[User Experience]
+```
 🚀 Key Features
 Real-time Voice Interface: Low-latency bi-directional streaming via WebSockets.
 
