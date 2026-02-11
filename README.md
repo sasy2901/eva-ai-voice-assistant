@@ -46,7 +46,7 @@ Groq API Key
 Deepgram API Key
 1. Clone the Repository
 Bash
-git clone https://github.com/YOUR_USERNAME/VoiceFlow.git
+git clone [https://github.com/YOUR_USERNAME/VoiceFlow.git](https://github.com/YOUR_USERNAME/VoiceFlow.git)
 cd VoiceFlow
 2. Install Dependencies
 Bash
@@ -65,5 +65,5 @@ Latency Optimization: Utilizes asynchronous Python (asyncio) to ensure the STT s
 
 Graceful Degradation: Implements a heuristic failover system for market data—if the primary API is rate-limited, the agent pivots to simulated metrics to maintain conversation flow.
 
-Deterministic Guardrails: By using JSON-mode response formats, the agent is prevented from "hallucinating" financial figures, ensuring 100% data integrity.
+Deterministic Guardrails: By using JSON-mode response formats, the agent is prevented from "hallucinations" financial figures, ensuring 100% data integrity.
 
