@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eva: Quantitative Intelligence Interface</title>
+    <style>
+        :root {
+            --theme-bg: #121212;
+            --theme-accent: #0f0;
+            --theme-glow: rgba(0, 255, 0, 0.1);
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+        body {
+            font-family: var(--font-mono); background-color: var(--theme-bg); color: var(--theme-accent);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; margin: 0; transition: background-color 0.5s ease;
+        }
+        h1 { font-size: 2.5rem; text-shadow: 0 0 10px var(--theme-accent); letter-spacing: 2px; }
+        #status-indicator { font-size: 1.2rem; margin-bottom: 20px; color: #888; text-transform: uppercase; }
+        #mic-btn {
+            padding: 15px 40px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 5px;
+            border: 2px solid var(--theme-accent); background: transparent; color: var(--theme-accent);
+            transition: all 0.3s ease; text-transform: uppercase;
+        }
+        #mic-btn:hover { background: var(--theme-accent); color: #000; box-shadow: 0 0 20px var(--theme-accent); }
+        #console-output { 
+            width: 80%; max-width: 700px; height: 400px; border: 1px solid #333; background: #000; 
+            padding: 20px; overflow-y: auto; margin-top: 20px; box-shadow: 0 0 30px var(--theme-glow); 
+            border-radius: 10px; scroll-behavior: smooth;
+        }
+        .log-entry { margin-bottom: 15px; line-height: 1.5; }
+        .agent-prefix { color: var(--theme-accent); font-weight: bold; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <h1>EVA: FINANCIAL ANALYST</h1>
+    <div id="status-indicator">System Standby...</div>
+    <button id="mic-btn" onclick="initializeUplink()">INITIATE VOICE UPLINK</button>
+    <div id="console-output"></div>
+
+    <script>
+        const CONFIG = { WS_ENDPOINT: `ws://${window.location.hostname}:8000/listen`, CHUNK_INTERVAL_MS: 250 };
+        const DOM = { btn: document.getElementById('mic-btn'), status: document.getElementById('status-indicator'), terminal: document.getElementById('console-output') };
+
+        async function initializeUplink() {
+            try {
+                const socket = new WebSocket(CONFIG.WS_ENDPOINT);
+                
+                socket.onopen = async () => {
+                    DOM.status.innerText = "🟢 SYSTEM ONLINE | AUDIO PIPELINE ACTIVE";
+                    DOM.btn.style.display = "none";
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                    recorder.ondataavailable = (e) => {
+                        if (e.data.size > 0 && socket.readyState === WebSocket.OPEN) socket.send(e.data);
+                    };
+                    recorder.start(CONFIG.CHUNK_INTERVAL_MS);
+                };
+
+                socket.onmessage = (event) => {
+                    const payload = JSON.parse(event.data);
+                    
+                    if (payload.text) {
+                        const div = document.createElement('div');
+                        div.className = "log-entry";
+                        div.innerHTML = `<span class="agent-prefix">EVA >></span> ${payload.text}`;
+                        DOM.terminal.appendChild(div);
+                        DOM.terminal.scrollTop = DOM.terminal.scrollHeight;
+                    }
+                    
+                    if (payload.emotion) {
+                        if (payload.emotion === "angry") {
+                            document.body.style.backgroundColor = "#220000";
+                            DOM.terminal.style.boxShadow = "0 0 30px #f00";
+                            DOM.status.innerText = "⚠️ CAUTION: ELEVATED USER AGITATION DETECTED";
+                        } else if (payload.emotion === "happy") {
+                            document.body.style.backgroundColor = "#001100";
+                            DOM.terminal.style.boxShadow = "0 0 30px #0f0";
+                            DOM.status.innerText = "💹 MARKET SENTIMENT: POSITIVE";
+                        } else {
+                            document.body.style.backgroundColor = "var(--theme-bg)";
+                            DOM.terminal.style.boxShadow = "0 0 30px var(--theme-glow)";
+                            DOM.status.innerText = "🟢 SYSTEM ONLINE | NOMINAL STATE";
+                        }
+                    }
+
+                    if (payload.audio) {
+                        const audio = new Audio("data:audio/mp3;base64," + payload.audio);
+                        audio.play();
+                    }
+                };
+
+                socket.onerror = () => { DOM.status.innerText = "🔴 CONNECTION FAULT DETECTED"; DOM.btn.style.display = "block"; };
+            } catch (err) {
+                DOM.status.innerText = "🔴 MICROPHONE ACCESS DENIED"; DOM.btn.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>
