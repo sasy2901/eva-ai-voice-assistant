@@ -5,6 +5,7 @@ Eva is an enterprise-grade AI Voice Agent designed for real-time market sentimen
 The system utilizes an asynchronous event loop to handle concurrent audio streaming and LLM processing, ensuring a "Human-in-the-loop" experience without blocking I/O.
 
 Code snippet
+```mermaid
 graph TD
     A[User Voice] -->|MediaRecorder API| B(Frontend: JS/HTML)
     B -->|WebSocket: Binary Audio| C{FastAPI Backend}
@@ -18,6 +19,7 @@ graph TD
     C -->|Aura-Asteria| H[Deepgram TTS]
     H -->|Base64 Audio| B
     B -->|Audio Playback + UI Glow| I[User Experience]
+
 🚀 Key Features
 Real-time Voice Interface: Low-latency bi-directional streaming via WebSockets.
 
